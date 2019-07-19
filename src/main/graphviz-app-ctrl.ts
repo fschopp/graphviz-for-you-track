@@ -21,6 +21,7 @@ import {
   EnumBundleElement,
   User,
 } from '@fschopp/project-planning-ui-for-you-track/dist/es6/youtrack-rest';
+import { strict as assert } from 'assert';
 import S, { DataSignal } from 's-js';
 import Viz from 'viz.js';
 import { GraphvizApp, GraphvizAppComputation } from './graphviz-app-model';
@@ -48,8 +49,7 @@ export class GraphvizAppCtrl {
   public static createDefaultGraphvizCtrl(
         app: GraphvizApp, appComputation: GraphvizAppComputation): GraphvizAppCtrl {
     const appCtrl: AppCtrl<GraphvizSettings> = AppCtrl.createDefaultAppCtrl(app, appComputation);
-    const visualPlanSettingsCtrl =
-        new GraphvizSettingsCtrl(app.settings, appCtrl.settingsCtrl, appCtrl.youTrackMetadataCtrl);
+    const visualPlanSettingsCtrl = new GraphvizSettingsCtrl(appCtrl.settingsCtrl, appCtrl.youTrackMetadataCtrl);
     return new GraphvizAppCtrl(app, appComputation, appCtrl, visualPlanSettingsCtrl);
   }
 
@@ -175,8 +175,9 @@ export class GraphvizAppCtrl {
     if (dot === undefined) {
       this.visualPlanAppComputation_.visualPlan(undefined);
     } else {
-      // Progress stays at 50% for the lack of a more accurate estimate.
-      this.visualPlanAppComputation_.progress(50);
+      // Progress stays at 95% for the lack of a more accurate estimate. (Retrieving data from YouTrack accounts for the
+      // "first" 90%, and 95% is the center between 90% and 100%...)
+      this.visualPlanAppComputation_.progress(95);
       const promiseAndCancel = computeSvgFromDot(dot);
       this.cancelLastInvocation_ = promiseAndCancel.cancel;
       const promise = promiseAndCancel.promise.then((svg) => {
@@ -210,18 +211,6 @@ function coalesce<T>(left: T | undefined, right: T): T {
   return left !== undefined
       ? left
       : right;
-}
-
-export interface ExtendedProjectPlan {
-  /**
-   * The project plan.
-   */
-  plan: ProjectPlan;
-
-  /**
-   * Time when the YouTrack activity log had been completely received and processed.
-   */
-  youTrackTimestamp: number;
 }
 
 function actionFromState(progress: number | undefined, pendingMetadata: boolean,
@@ -370,7 +359,7 @@ function computeDotFromIssues(issues: YouTrackIssue[], baseUrl: string, userMap:
   const dotBuilder: DotBuilder = {
     dot:
         'digraph ProjectPlan {\n' +
-        ' graph [\n' +
+        '  graph [\n' +
         '    fontname = "helvetica";\n' +
         '    style = "rounded,filled";\n' +
         '    target = "_blank";\n' +
@@ -465,6 +454,7 @@ function labelFromId(id: string): string {
 }
 
 function sixDigitColor(color: string) {
+  assert(color.match(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/) !== null);
   return (color.length === 4
       ? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
       : color);

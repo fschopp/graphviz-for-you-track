@@ -1,6 +1,3 @@
-/**
- * User-provided state of the settings UI component.
- */
 import {
   assignDependsLinkType,
   assignSettings,
@@ -14,7 +11,7 @@ import {
 import S, { DataSignal } from 's-js';
 
 /**
- * User-provided settings pertaining to the visual plan.
+ * User-provided settings pertaining to invoking Graphviz on YouTrack data.
  */
 export interface GraphvizSettings extends Settings, DependsLinkType {
   readonly assigneeFieldId: DataSignal<string>;

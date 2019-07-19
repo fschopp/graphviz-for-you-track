@@ -35,6 +35,9 @@
     "src/main/graphviz-app-ctrl.ts",
     "src/main/graphviz-app-model.ts",
     "src/main/graphviz-app-view.tsx",
+    "src/main/graphviz-settings-ctrl.ts",
+    "src/main/graphviz-settings-model.ts",
+    "src/main/graphviz-settings-view.tsx",
     "src/main/index.ts"
   ],
   "typedocOptions": {
