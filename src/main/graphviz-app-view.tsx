@@ -28,7 +28,7 @@ export function GraphvizAppView(
               role="main">
           <div class="overflow-hidden position-absolute fill-parent d-flex flex-column"
                fn={withClassIff(() => app.currentPage() !== Page.HOME, 'invisible')}>
-            <div class="d-flex align-items-center border-bottom px-3 py-2">
+            <div class="d-flex align-items-center border-bottom px-3 py-2 flex-shrink-0 flex-grow-0">
               <label for="zoom" class="mb-0">🔍</label>
               <input class="custom-range ml-2" type="range" id="zoom" min="-200" max="200" step="1"
                      fn={data(app.zoom)}/>

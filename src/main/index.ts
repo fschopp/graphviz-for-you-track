@@ -11,11 +11,16 @@ import {
 import { GraphvizAppView } from './graphviz-app-view';
 import { assignGraphvizSettings } from './graphviz-settings-model';
 
+// The path hard-codes the absolute path to the Viz.js worker. This is obviously fine while the web app is served from
+// GitHub pages, but it could be improved.
+// Note that we need full.render.js (instead of lite.render.js) for HTML-like labels
+const VIZ_WORKER_PATH: string = '/graphviz-for-you-track/full.render.js';
+
 S.root(() => {
   const app: GraphvizApp = createGraphvizApp();
   const appComputation: GraphvizAppComputation = createGraphvizAppComputation();
 
-  const ctrl = GraphvizAppCtrl.createDefaultGraphvizCtrl(app, appComputation);
+  const ctrl = GraphvizAppCtrl.createDefaultGraphvizCtrl(app, appComputation, VIZ_WORKER_PATH);
   new Router(
       app,
       (plainApp) => assignGraphvizApp(app, plainApp),

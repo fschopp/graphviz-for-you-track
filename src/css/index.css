@@ -1,11 +1,11 @@
 @import "../../node_modules/@fschopp/project-planning-ui-for-you-track/dist/index.css";
 
-/**
+/*
  * Own styles
  * ==========
  */
 
-/** Fill the entire parent (requires the parent to be positioned) */
+/* Fill the entire parent (requires the parent to be positioned) */
 .fill-parent {
   top: 0;
   right: 0;
@@ -13,7 +13,13 @@
   left: 0;
 }
 
-/*
+/* Safari seems to use different defaults than other browsers, leading to non-proportional (rather discrete) font
+ * scaling. See also: https://stackoverflow.com/questions/31056543/safari-font-rendering-issues */
+svg > .graph {
+  text-rendering: geometricPrecision;
+}
+
+/**
  * Bootstrap
  * =========
  */

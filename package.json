@@ -33,8 +33,8 @@
     "test:coverage": "npm run test -- --collect-coverage",
     "compile": "tsc && tsc -p src/scripts/ && node target/scripts/surplus-compiler.js target/main/*.jsx",
     "doc": "typedoc",
-    "run": "parcel serve --cache-dir target/parcel-cache --out-dir target/run --public-url /graphviz-for-you-track/ src/html/index.html",
-    "site": "parcel build --no-minify --cache-dir target/parcel-cache --out-dir target/site --public-url /graphviz-for-you-track/ src/html/index.html",
+    "run": "mkdir -p target/run && cp node_modules/viz.js/full.render.js target/run && parcel serve --cache-dir target/parcel-cache --out-dir target/run --public-url /graphviz-for-you-track/ src/html/index.html",
+    "site": "mkdir -p target/site && cp node_modules/viz.js/full.render.js target/site && parcel build --cache-dir target/parcel-cache --out-dir target/site --public-url /graphviz-for-you-track/ src/html/index.html",
     "package": "npm run clean && npm run lint && npm run test:coverage && npm run compile && npm run doc && npm run site && src/scripts/gh_pages.sh"
   },
   "browserslist": [

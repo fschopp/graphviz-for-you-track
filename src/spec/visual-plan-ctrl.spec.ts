@@ -35,7 +35,7 @@ test('generates visualization if GraphvizAppComputation.projectPlan signal chang
   app.settings.youTrackBaseUrl('http://fake-youtrack/');
   let appCtrl: GraphvizAppCtrl | undefined;
   S.root(() => {
-    appCtrl = GraphvizAppCtrl.createDefaultGraphvizCtrl(app, appComputation);
+    appCtrl = GraphvizAppCtrl.createDefaultGraphvizCtrl(app, appComputation, '/mock/path/to/worker.js');
   });
   if (appCtrl === undefined) {
     throw new Error('appCtrl should be defined');

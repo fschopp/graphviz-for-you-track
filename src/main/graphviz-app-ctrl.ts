@@ -47,15 +47,16 @@ export class GraphvizAppCtrl {
   private readonly widthAndHeight_: () => WidthAndHeight | undefined;
 
   public static createDefaultGraphvizCtrl(
-        app: GraphvizApp, appComputation: GraphvizAppComputation): GraphvizAppCtrl {
+        app: GraphvizApp, appComputation: GraphvizAppComputation, vizWorkerUrl: string): GraphvizAppCtrl {
     const appCtrl: AppCtrl<GraphvizSettings> = AppCtrl.createDefaultAppCtrl(app, appComputation);
     const visualPlanSettingsCtrl = new GraphvizSettingsCtrl(appCtrl.settingsCtrl, appCtrl.youTrackMetadataCtrl);
-    return new GraphvizAppCtrl(app, appComputation, appCtrl, visualPlanSettingsCtrl);
+    return new GraphvizAppCtrl(app, appComputation, vizWorkerUrl, appCtrl, visualPlanSettingsCtrl);
   }
 
   public constructor(
       private readonly visualPlanApp_: GraphvizApp,
       private readonly visualPlanAppComputation_: GraphvizAppComputation,
+      private readonly vizWorkerUrl_: string,
       public readonly appCtrl: AppCtrl<GraphvizSettings>,
       public readonly visualPlanSettingsCtrl: GraphvizSettingsCtrl
   ) {
@@ -178,7 +179,7 @@ export class GraphvizAppCtrl {
       // Progress stays at 95% for the lack of a more accurate estimate. (Retrieving data from YouTrack accounts for the
       // "first" 90%, and 95% is the center between 90% and 100%...)
       this.visualPlanAppComputation_.progress(95);
-      const promiseAndCancel = computeSvgFromDot(dot);
+      const promiseAndCancel = computeSvgFromDot(dot, this.vizWorkerUrl_);
       this.cancelLastInvocation_ = promiseAndCancel.cancel;
       const promise = promiseAndCancel.promise.then((svg) => {
         this.cancelLastInvocation_ = undefined;
@@ -317,6 +318,7 @@ function enterNode(dotBuilder: DotBuilder, currentIndent: string, graphvizIssue:
   dotBuilder.dot +=
       currentIndent + `  label = <${beginLabel}${graphvizIssue.id}: ${graphvizIssue.escapedSummary}${endLabel}`;
   if (assignee !== undefined) {
+    // noinspection HtmlUnknownAttribute,HtmlDeprecatedTag
     dotBuilder.dot += `<br/><font point-size="12">${assignee}</font>`;
   }
   dotBuilder.dot += '>;\n' +
@@ -411,13 +413,12 @@ function computeDotFromIssues(issues: YouTrackIssue[], baseUrl: string, userMap:
   return dotBuilder.dot;
 }
 
-function computeSvgFromDot(dot: string):
+function computeSvgFromDot(dot: string, workerUrl: string):
     {
       promise: Promise<SVGSVGElement>,
       cancel: () => void,
     } {
-  // We need full.render.js (instead of lite.render.js) for HTML-like labels
-  const worker = new Worker('../../node_modules/viz.js/full.render.js');
+  const worker = new Worker(workerUrl);
   const viz = new Viz({worker});
   let isCanceled = false;
 
