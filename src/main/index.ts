@@ -16,19 +16,27 @@ import { assignGraphvizSettings } from './graphviz-settings-model';
 // Note that we need full.render.js (instead of lite.render.js) for HTML-like labels
 const VIZ_WORKER_PATH: string = '/graphviz-for-you-track/full.render.js';
 
-S.root(() => {
-  const app: GraphvizApp = createGraphvizApp();
-  const appComputation: GraphvizAppComputation = createGraphvizAppComputation();
+// Unfortunate workaround for Safari. See https://github.com/fschopp/project-planning-for-you-track/issues/1
+const DELAY_BEFORE_ACCESSING_SESSION_STORAGE_MS = 50;
 
-  const ctrl = GraphvizAppCtrl.createDefaultGraphvizCtrl(app, appComputation, VIZ_WORKER_PATH);
-  new Router(
-      app,
-      (plainApp) => assignGraphvizApp(app, plainApp),
-      (plainSettings) => assignGraphvizSettings(app.settings, plainSettings)
-  );
+window.setTimeout(run, DELAY_BEFORE_ACCESSING_SESSION_STORAGE_MS);
 
-  document.body.append(...GraphvizAppView({app, appComputation, ctrl}).children);
-});
+
+function run() {
+  S.root(() => {
+    const app: GraphvizApp = createGraphvizApp();
+    const appComputation: GraphvizAppComputation = createGraphvizAppComputation();
+
+    const ctrl = GraphvizAppCtrl.createDefaultGraphvizCtrl(app, appComputation, VIZ_WORKER_PATH);
+    new Router(
+        app,
+        (plainApp) => assignGraphvizApp(app, plainApp),
+        (plainSettings) => assignGraphvizSettings(app.settings, plainSettings)
+    );
+
+    document.body.append(...GraphvizAppView({app, appComputation, ctrl}).children);
+  });
+}
 
 // The purpose of the exports is currently only documentation of the relevant elements.
 export * from './graphviz-app-ctrl';
