@@ -44,8 +44,8 @@
     "node": ">=10.0.0"
   },
   "dependencies": {
-    "@fschopp/project-planning-for-you-track": "^0.9.2",
-    "@fschopp/project-planning-ui-for-you-track": "fschopp/project-planning-ui-for-you-track#bd43b4d9bc5ddd7be61dc4ced6724ae52232c584",
+    "@fschopp/project-planning-for-you-track": "fschopp/project-planning-for-you-track#6dec2d7612431016baea70e6ffb1f67079f8c082",
+    "@fschopp/project-planning-ui-for-you-track": "fschopp/project-planning-ui-for-you-track#4b0813f2337c15b93ef49b28a0c655ad783c6126",
     "s-js": "^0.4.9",
     "surplus": "^0.5.3",
     "surplus-mixin-data": "^0.5.0",

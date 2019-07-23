@@ -147,7 +147,7 @@ export class GraphvizAppCtrl {
       omitIssueActivities: true,
     };
     const projectPlan: ProjectPlan = await retrieveProjectPlan(
-        this.appCtrl.settingsCtrl.verifiedBaseUrl(),
+        this.appCtrl.settingsCtrl.normalizedBaseUrl(),
         youTrackConfig,
         options
     );

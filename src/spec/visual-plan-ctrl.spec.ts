@@ -33,6 +33,7 @@ test('generates visualization if GraphvizAppComputation.projectPlan signal chang
   const appComputation: GraphvizAppComputation = createGraphvizAppComputation();
 
   app.settings.youTrackBaseUrl('http://fake-youtrack/');
+  app.settings.hubUrl('http://fake-hub/');
   let appCtrl: GraphvizAppCtrl | undefined;
   S.root(() => {
     appCtrl = GraphvizAppCtrl.createDefaultGraphvizCtrl(app, appComputation, '/mock/path/to/worker.js');
