@@ -120,28 +120,28 @@ const expectedDot: string = stripFirstCharAndLeadingSpaces(`
 
       subgraph cluster_XYZ_1 {
         label = <XYZ-1: Issue 1<br/><font point-size="12">User 0</font>>;
-        href = "http://fake-youtrack/youtrack/issue/XYZ-1";
+        href = "http://fake-youtrack/issue/XYZ-1";
         fillcolor = "#ffffff";
         fontcolor = "#000000";
         color = "#000000";
 
         XYZ_2 [
           label = <XYZ-2: Issue 2<br/><font point-size="12">User 0</font>>;
-          href = "http://fake-youtrack/youtrack/issue/XYZ-2";
+          href = "http://fake-youtrack/issue/XYZ-2";
           fillcolor = "#ffffff";
           fontcolor = "#000000";
           color = "#000000";
         ]
         subgraph cluster_XYZ_3 {
           label = <XYZ-3: Issue 3<br/><font point-size="12">User 0</font>>;
-          href = "http://fake-youtrack/youtrack/issue/XYZ-3";
+          href = "http://fake-youtrack/issue/XYZ-3";
           fillcolor = "#ffffff";
           fontcolor = "#000000";
           color = "#000000";
 
           XYZ_4 [
             label = <XYZ-4: Issue 4<br/><font point-size="12">User 0</font>>;
-            href = "http://fake-youtrack/youtrack/issue/XYZ-4";
+            href = "http://fake-youtrack/issue/XYZ-4";
             fillcolor = "#ffffff";
             fontcolor = "#000000";
             color = "#000000";
@@ -150,21 +150,21 @@ const expectedDot: string = stripFirstCharAndLeadingSpaces(`
       }
       subgraph cluster_XYZ_5 {
         label = <XYZ-5: Issue 5<br/><font point-size="12">User 0</font>>;
-        href = "http://fake-youtrack/youtrack/issue/XYZ-5";
+        href = "http://fake-youtrack/issue/XYZ-5";
         fillcolor = "#ffffff";
         fontcolor = "#000000";
         color = "#000000";
 
         XYZ_6 [
           label = <<s>XYZ-6: Issue 6</s><br/><font point-size="12">User 0</font>>;
-          href = "http://fake-youtrack/youtrack/issue/XYZ-6";
+          href = "http://fake-youtrack/issue/XYZ-6";
           fillcolor = "#ffffff";
           fontcolor = "#000000";
           color = "#000000";
         ]
         XYZ_7 [
           label = <XYZ-7: Issue 7<br/><font point-size="12">User 0</font>>;
-          href = "http://fake-youtrack/youtrack/issue/XYZ-7";
+          href = "http://fake-youtrack/issue/XYZ-7";
           fillcolor = "#ffffff";
           fontcolor = "#000000";
           color = "#000000";
@@ -172,7 +172,7 @@ const expectedDot: string = stripFirstCharAndLeadingSpaces(`
       }
       XYZ_8 [
         label = <XYZ-8: Issue 8<br/><font point-size="12">User 0</font>>;
-        href = "http://fake-youtrack/youtrack/issue/XYZ-8";
+        href = "http://fake-youtrack/issue/XYZ-8";
         fillcolor = "#ffffff";
         fontcolor = "#000000";
         color = "#000000";

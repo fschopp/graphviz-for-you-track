@@ -322,7 +322,7 @@ function enterNode(dotBuilder: DotBuilder, currentIndent: string, graphvizIssue:
     dotBuilder.dot += `<br/><font point-size="12">${assignee}</font>`;
   }
   dotBuilder.dot += '>;\n' +
-      currentIndent + `  href = "${baseUrl}youtrack/issue/${graphvizIssue.id}";\n` +
+      currentIndent + `  href = "${baseUrl}issue/${graphvizIssue.id}";\n` +
       currentIndent + `  fillcolor = "${bgColor}";\n` +
       currentIndent + `  fontcolor = "${fgColor}";\n` +
       currentIndent + `  color = "${fgColor}";\n`;
