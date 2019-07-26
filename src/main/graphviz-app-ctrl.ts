@@ -10,6 +10,7 @@ import {
 } from '@fschopp/project-planning-for-you-track';
 import {
   AppCtrl,
+  Page,
   Plain,
   toNormalizedPlainSettings,
   unreachableCase,
@@ -29,9 +30,10 @@ import { GraphvizSettingsCtrl } from './graphviz-settings-ctrl';
 import { GraphvizSettings } from './graphviz-settings-model';
 
 export enum Action {
+  COMPLETE_SETTINGS = 'complete',
   CONNECT = 'connect',
   BUILD_PLAN = 'build',
-  UPDATE_PREDICTION = 'update',
+  UPDATE_PLAN = 'update',
   STOP = 'stop',
 }
 
@@ -62,7 +64,8 @@ export class GraphvizAppCtrl {
   ) {
     this.action = S(() => actionFromState(
         this.visualPlanAppComputation_.progress(), this.appCtrl.youTrackMetadataCtrl.pendingMetadata(),
-        this.visualPlanAppComputation_.youTrackMetadata(), this.visualPlanAppComputation_.projectPlan()));
+        this.visualPlanAppComputation_.youTrackMetadata(), this.visualPlanAppComputation_.projectPlan(),
+        this.visualPlanAppComputation_.numInvalidSettings() === 0));
     this.typeMap_ = S(() => {
       const youTrackMetadata: YouTrackMetadata | undefined = this.visualPlanAppComputation_.youTrackMetadata();
       const typeFieldId: string = this.visualPlanApp_.settings.typeFieldId();
@@ -120,8 +123,9 @@ export class GraphvizAppCtrl {
   private doAction(): void {
     const action: Action = this.action();
     switch (action) {
+      case Action.COMPLETE_SETTINGS: this.visualPlanApp_.currentPage(Page.SETTINGS); return;
       case Action.CONNECT: this.visualPlanAppComputation_.connect(null); return;
-      case Action.BUILD_PLAN: case Action.UPDATE_PREDICTION:
+      case Action.BUILD_PLAN: case Action.UPDATE_PLAN:
         return this.appCtrl.showErrorIfFailure(
             'Failed to build visual plan',
             this.buildPlan(toNormalizedPlainSettings(this.visualPlanApp_.settings))
@@ -215,15 +219,18 @@ function coalesce<T>(left: T | undefined, right: T): T {
 }
 
 function actionFromState(progress: number | undefined, pendingMetadata: boolean,
-    youTrackMetadata: YouTrackMetadata | undefined, projectPlan: ProjectPlan | undefined): Action {
+    youTrackMetadata: YouTrackMetadata | undefined, projectPlan: ProjectPlan | undefined,
+    hasCompleteSettings: boolean): Action {
   if (progress !== undefined || pendingMetadata) {
     return Action.STOP;
+  } else if (!hasCompleteSettings) {
+    return Action.COMPLETE_SETTINGS;
   } else if (youTrackMetadata === undefined) {
     return Action.CONNECT;
   } else if (projectPlan === undefined) {
     return Action.BUILD_PLAN;
   } else {
-    return Action.UPDATE_PREDICTION;
+    return Action.UPDATE_PLAN;
   }
 }
 

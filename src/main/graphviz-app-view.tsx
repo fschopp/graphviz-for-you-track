@@ -20,7 +20,8 @@ export function GraphvizAppView(
       <div>
         <NavView appName={appComputation.name} currentPage={app.currentPage} progress={appComputation.progress}
                  numWarnings={() => numWarnings(appComputation.projectPlan())}
-                 isActionBtnVisible={() => true}
+                 isActionBtnVisible={() =>
+                     ctrl.action() !== Action.COMPLETE_SETTINGS || app.currentPage() !== Page.SETTINGS}
                  actionBtnLabel={() => actionLabel(ctrl.action())}
                  actionSignal={appComputation.doAction} />
         {/* See https://stackoverflow.com/a/36247448 for "overflow-hidden" */}
@@ -38,17 +39,18 @@ export function GraphvizAppView(
           <div class="overflow-auto position-absolute fill-parent"
                fn={withClassIff(() => app.currentPage() !== Page.WARNINGS, 'invisible')}>
             <div class="container">
-              <h2 class="mt-3">Project Plan Warnings</h2>
+              <h2 class="mt-3">Visual Plan Warnings</h2>
               <WarningsView projectPlan={appComputation.projectPlan} />
             </div>
           </div>
           <div class="overflow-auto position-absolute fill-parent"
                fn={withClassIff(() => app.currentPage() !== Page.SETTINGS, 'invisible')}>
-            <div class="container">
+            <form class="container was-validated">
               <h2 class="mt-3">Settings</h2>
               <GraphvizSettingsView settings={app.settings} ctrl={ctrl.visualPlanSettingsCtrl}
-                                    connectSignal={appComputation.connect}/>
-            </div>
+                                    connectSignal={appComputation.connect}
+                                    invalidCounter={ctrl.appCtrl.invalidCounter} />
+            </form>
           </div>
         </main>
         <AlertsView alerts={appComputation.alerts} ctrl={ctrl.appCtrl.alertsCtrl} />
@@ -80,9 +82,10 @@ function numWarnings(projectPlan: ProjectPlan | undefined): number {
 
 function actionLabel(action: Action) {
   switch (action) {
+    case Action.COMPLETE_SETTINGS: return 'Finish settings...';
     case Action.CONNECT: return 'Connect';
     case Action.BUILD_PLAN: return 'Build plan';
-    case Action.UPDATE_PREDICTION: return 'Rebuild plan';
+    case Action.UPDATE_PLAN: return 'Rebuild plan';
     case Action.STOP: return 'Stop';
     default: return unreachableCase(action);
   }
