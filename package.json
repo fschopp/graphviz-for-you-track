@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@fschopp/project-planning-for-you-track": "fschopp/project-planning-for-you-track#6dec2d7612431016baea70e6ffb1f67079f8c082",
-    "@fschopp/project-planning-ui-for-you-track": "fschopp/project-planning-ui-for-you-track#e34a3e172a8d7bef3205d3267e804dbfe7056538",
+    "@fschopp/project-planning-ui-for-you-track": "fschopp/project-planning-ui-for-you-track#5cca070ea7ee228ac115ae6f1a8d5cca83c4e2fa",
     "s-js": "^0.4.9",
     "surplus": "^0.5.3",
     "surplus-mixin-data": "^0.5.0",

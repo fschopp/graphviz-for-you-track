@@ -96,6 +96,7 @@ const mockIssues: Issue[] = [
   {idx: 8, assignee: 0, type: 1, deps: [5]},
 ];
 
+// noinspection HtmlDeprecatedTag,HtmlUnknownAttribute,RequiredAttributes
 const expectedDot: string = stripFirstCharAndLeadingSpaces(`
     digraph ProjectPlan {
       graph [

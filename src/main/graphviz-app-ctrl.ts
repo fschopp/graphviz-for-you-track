@@ -64,18 +64,16 @@ export class GraphvizAppCtrl {
   ) {
     this.action = S(() => actionFromState(
         this.visualPlanAppComputation_.progress(), this.appCtrl.youTrackMetadataCtrl.pendingMetadata(),
-        this.visualPlanAppComputation_.youTrackMetadata(), this.visualPlanAppComputation_.projectPlan(),
+        this.appCtrl.youTrackMetadataCtrl.definedYouTrackMetadata(), this.visualPlanAppComputation_.projectPlan(),
         this.visualPlanAppComputation_.numInvalidSettings() === 0));
     this.typeMap_ = S(() => {
-      const youTrackMetadata: YouTrackMetadata | undefined = this.visualPlanAppComputation_.youTrackMetadata();
+      const youTrackMetadata: YouTrackMetadata = this.appCtrl.youTrackMetadataCtrl.definedYouTrackMetadata();
       const typeFieldId: string = this.visualPlanApp_.settings.typeFieldId();
       let typeField: CustomField | undefined;
-      if (youTrackMetadata !== undefined) {
-        for (const customField of youTrackMetadata.customFields) {
-          if (typeFieldId === customField.id) {
-            typeField = customField;
-            break;
-          }
+      for (const customField of youTrackMetadata.customFields) {
+        if (typeFieldId === customField.id) {
+          typeField = customField;
+          break;
         }
       }
       const array: EnumBundleElement[] = typeField === undefined
@@ -160,7 +158,7 @@ export class GraphvizAppCtrl {
 
   private updateDot(): void {
     const projectPlan: ProjectPlan | undefined = this.visualPlanAppComputation_.projectPlan();
-    const normalizedBaseUrl: string | undefined = opt(this.visualPlanAppComputation_.youTrackMetadata(), 'baseUrl');
+    const normalizedBaseUrl: string = this.appCtrl.youTrackMetadataCtrl.definedYouTrackMetadata().baseUrl;
     const userMap: Map<string, User> = this.appCtrl.youTrackMetadataCtrl.youTrackUserMap();
     const typeFieldId: string = this.visualPlanApp_.settings.typeFieldId();
     const typeMap: Map<string, EnumBundleElement> = this.typeMap_();
@@ -176,9 +174,11 @@ export class GraphvizAppCtrl {
     if (this.cancelLastInvocation_ !== undefined) {
       this.cancelLastInvocation_();
       this.cancelLastInvocation_ = undefined;
+      // Note that we still must update this.visualPlanAppComputation_.progress (which we do).
     }
     if (dot === undefined) {
       this.visualPlanAppComputation_.visualPlan(undefined);
+      this.visualPlanAppComputation_.progress(undefined);
     } else {
       // Progress stays at 95% for the lack of a more accurate estimate. (Retrieving data from YouTrack accounts for the
       // "first" 90%, and 95% is the center between 90% and 100%...)
@@ -219,13 +219,13 @@ function coalesce<T>(left: T | undefined, right: T): T {
 }
 
 function actionFromState(progress: number | undefined, pendingMetadata: boolean,
-    youTrackMetadata: YouTrackMetadata | undefined, projectPlan: ProjectPlan | undefined,
+    youTrackMetadata: YouTrackMetadata, projectPlan: ProjectPlan | undefined,
     hasCompleteSettings: boolean): Action {
   if (progress !== undefined || pendingMetadata) {
     return Action.STOP;
   } else if (!hasCompleteSettings) {
     return Action.COMPLETE_SETTINGS;
-  } else if (youTrackMetadata === undefined) {
+  } else if (youTrackMetadata.baseUrl.length === 0) {
     return Action.CONNECT;
   } else if (projectPlan === undefined) {
     return Action.BUILD_PLAN;
