@@ -2,9 +2,12 @@
 /// <reference path="module.d.ts"/>
 
 import {
+  IssueNode,
+  makeForest,
   ProjectPlan,
   retrieveProjectPlan,
   RetrieveProjectPlanOptions,
+  traverseIssueForest,
   YouTrackConfig,
   YouTrackIssue,
 } from '@fschopp/project-planning-for-you-track';
@@ -247,57 +250,10 @@ interface GraphvizIssue {
   isResolved: boolean;
   assignee?: User;
   type?: EnumBundleElement;
-  parent?: GraphvizIssue;
-  dependencies: GraphvizIssue[];
-  children: GraphvizIssue[];
 }
 
-/**
- * Creates a new tree of {@link GraphvizIssue} nodes, and returns an `Iterable` over all roots.
- */
-function rootIssues(issues: YouTrackIssue[], userMap: Map<string, User>, typeFieldId: string,
-    typeMap: Map<string, EnumBundleElement>): Iterable<GraphvizIssue> {
-  const idToYouTrackIssueMap: Map<string, YouTrackIssue> =
-      issues.reduce((map, issue) => map.set(issue.id, issue), new Map<string, YouTrackIssue>());
-  const idToGraphvizMap: Map<string, GraphvizIssue> =
-      issues.reduce((map, issue) => {
-        const typeId: string | undefined = issue.customFields[typeFieldId];
-        return map.set(issue.id, {
-            id: issue.id,
-            label: labelFromId(issue.id),
-            summary: issue.summary,
-            escapedSummary: replaceWithHtmlEntities(issue.summary),
-            isResolved: issue.resolved < Number.MAX_SAFE_INTEGER,
-            assignee: userMap.get(issue.assignee),
-            type: typeId === undefined
-                ? undefined
-                : typeMap.get(typeId),
-            dependencies: [],
-            children: [],
-          });
-      }, new Map<string, GraphvizIssue>());
-  for (const graphvizIssue of idToGraphvizMap.values()) {
-    const youTrackIssue: YouTrackIssue = idToYouTrackIssueMap.get(graphvizIssue.id)!;
-
-    const parentKey: string = youTrackIssue.parent;
-    if (parentKey.length > 0) {
-      graphvizIssue.parent = idToGraphvizMap.get(parentKey)!;
-      graphvizIssue.parent.children.push(graphvizIssue);
-    }
-
-    for (const dependency of youTrackIssue.dependencies) {
-      graphvizIssue.dependencies.push(idToGraphvizMap.get(dependency)!);
-    }
-  }
-  return {
-    * [Symbol.iterator]() {
-      for (const graphvizIssue of idToGraphvizMap.values()[Symbol.iterator]()) {
-        if (graphvizIssue.parent === undefined) {
-          yield graphvizIssue;
-        }
-      }
-    },
-  };
+interface ExtendedIssue extends YouTrackIssue {
+  graphvizIssue: GraphvizIssue;
 }
 
 interface DotBuilder {
@@ -305,8 +261,10 @@ interface DotBuilder {
   dependenciesDot: string;
 }
 
-function enterNode(dotBuilder: DotBuilder, currentIndent: string, graphvizIssue: GraphvizIssue, baseUrl: string): void {
-  const isSubgraph: boolean = graphvizIssue.children.length > 0;
+function enterNode(dotBuilder: DotBuilder, currentIndent: string, node: IssueNode<ExtendedIssue>, baseUrl: string):
+    void {
+  const graphvizIssue: GraphvizIssue = node.issue.graphvizIssue;
+  const isSubgraph: boolean = node.children.length > 0;
   dotBuilder.dot += currentIndent;
   if (isSubgraph) {
     dotBuilder.dot += `subgraph cluster_${graphvizIssue.label} {\n`;
@@ -333,9 +291,10 @@ function enterNode(dotBuilder: DotBuilder, currentIndent: string, graphvizIssue:
       currentIndent + `  fillcolor = "${bgColor}";\n` +
       currentIndent + `  fontcolor = "${fgColor}";\n` +
       currentIndent + `  color = "${fgColor}";\n`;
-  const label: string = linkNodeForIssue(graphvizIssue);
-  for (const dependency of graphvizIssue.dependencies) {
-    const dependencyLabel: string = linkNodeForIssue(dependency);
+  const label: string = linkLabelForIssueNode(node);
+  for (const dependencyNode of node.dependencies) {
+    const dependency: GraphvizIssue = dependencyNode.issue.graphvizIssue;
+    const dependencyLabel: string = linkLabelForIssueNode(dependencyNode);
     const isDependencySubgraph: boolean = dependencyLabel !== dependency.label;
     dotBuilder.dependenciesDot += `  ${dependencyLabel} -> ${label}`;
     if (isSubgraph || isDependencySubgraph) {
@@ -350,7 +309,7 @@ function enterNode(dotBuilder: DotBuilder, currentIndent: string, graphvizIssue:
     }
     dotBuilder.dependenciesDot += '\n';
   }
-  if (graphvizIssue.children.length > 0) {
+  if (node.children.length > 0) {
     dotBuilder.dot += '\n';
   }
 }
@@ -390,29 +349,34 @@ function computeDotFromIssues(issues: YouTrackIssue[], baseUrl: string, userMap:
         '\n',
     dependenciesDot: '',
   };
-  let currentIterator: Iterator<GraphvizIssue> = rootIssues(issues, userMap, typeFieldId, typeMap)[Symbol.iterator]();
-  const stack: Iterator<GraphvizIssue>[] = [];
-  const indent: () => string = () => '  '.repeat(stack.length + 1);
-  while (true) {
-    const iteratorResult = currentIterator.next();
-    if (iteratorResult.done) {
-      if (stack.length === 0) {
-        break;
+  const extendedIssues: ExtendedIssue[] = issues.map((issue) => {
+    const typeId: string | undefined = issue.customFields[typeFieldId];
+    const graphvizIssue: GraphvizIssue = {
+      id: issue.id,
+      label: labelFromId(issue.id),
+      summary: issue.summary,
+      escapedSummary: replaceWithHtmlEntities(issue.summary),
+      isResolved: issue.resolved < Number.MAX_SAFE_INTEGER,
+      assignee: userMap.get(issue.assignee),
+      type: typeId === undefined
+          ? undefined
+          : typeMap.get(typeId),
+    };
+    return {...issue, graphvizIssue};
+  });
+  let indentLevel = 0;
+  const indent: () => string = () => '  '.repeat(indentLevel);
+  traverseIssueForest(
+      makeForest(extendedIssues),
+      (node) => {
+        ++indentLevel;
+        enterNode(dotBuilder, indent(), node, baseUrl);
+      },
+      (node) => {
+        leaveNode(dotBuilder, indent(), node.children.length > 0);
+        --indentLevel;
       }
-      currentIterator = stack.pop()!;
-      leaveNode(dotBuilder, indent(), true);
-    } else {
-      const graphvizIssue: GraphvizIssue = iteratorResult.value;
-      const currentIndent: string = indent();
-      enterNode(dotBuilder, currentIndent, graphvizIssue, baseUrl);
-      if (graphvizIssue.children.length > 0) {
-        stack.push(currentIterator);
-        currentIterator = graphvizIssue.children[Symbol.iterator]();
-      } else {
-        leaveNode(dotBuilder, currentIndent, false);
-      }
-    }
-  }
+  );
   if (dotBuilder.dependenciesDot.length > 0) {
     dotBuilder.dot += '\n' + dotBuilder.dependenciesDot;
   }
@@ -468,12 +432,12 @@ function sixDigitColor(color: string) {
       : color);
 }
 
-function linkNodeForIssue(issue: GraphvizIssue): string {
-  let currentIssue: GraphvizIssue = issue;
-  while (currentIssue.children.length > 0) {
-    currentIssue = currentIssue.children[0];
+function linkLabelForIssueNode(node: IssueNode<ExtendedIssue>): string {
+  let currentNode: IssueNode<ExtendedIssue> = node;
+  while (currentNode.children.length > 0) {
+    currentNode = currentNode.children[0];
   }
-  return currentIssue.label;
+  return currentNode.issue.graphvizIssue.label;
 }
 
 /**

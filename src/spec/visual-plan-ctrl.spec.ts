@@ -30,10 +30,10 @@ afterEach(() => {
 
 test('generates visualization if GraphvizAppComputation.projectPlan signal changes', async () => {
   const app: GraphvizApp = createGraphvizApp();
-  const appComputation: GraphvizAppComputation = createGraphvizAppComputation();
-
   app.settings.youTrackBaseUrl('http://fake-youtrack/');
   app.settings.hubUrl('http://fake-hub/');
+  const appComputation: GraphvizAppComputation = createGraphvizAppComputation();
+
   let appCtrl: GraphvizAppCtrl | undefined;
   S.root(() => {
     appCtrl = GraphvizAppCtrl.createDefaultGraphvizCtrl(app, appComputation, '/mock/path/to/worker.js');
